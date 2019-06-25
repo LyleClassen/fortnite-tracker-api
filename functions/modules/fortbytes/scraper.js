@@ -32,7 +32,6 @@ const getDescAndUrl = (fbCheerio) => {
   return fbInfo;
 }
 
-
 const processCheerioData = (fortByteCheerioData) => {
   const fortByteData = [];
   fortByteCheerioData.each((i, fbCheerioRaw) => {
