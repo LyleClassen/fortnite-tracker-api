@@ -1,6 +1,6 @@
 const admin = require("firebase-admin");
 const functions = require('firebase-functions');
-const fortBytes = require('./modules/fortbytes/fortbytes');
+const fortBytes = require('./modules/fortbytes');
 
 admin.initializeApp();
 

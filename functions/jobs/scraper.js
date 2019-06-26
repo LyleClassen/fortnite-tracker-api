@@ -47,14 +47,26 @@ const processCheerioData = (fortByteCheerioData) => {
   return fortByteData;
 } 
 
+const findUpdatedDate = (html) => {
+  const fortByteTrackerBlock = $('.td-post-content.td-pb-padding-side p > strong',html);
+  const date = fortByteTrackerBlock.toArray().find((ele) => { 
+    return $(ele).text().endsWith('2019')
+  });
+  return $(date).text();
+};
+
 const scrapeFortByteData = async () => {
   const html = await rp(url);
   
   const fortByteCheerioData = getFortByteCheerioData(html)
+  const lastUpdatedDate = findUpdatedDate(html);
 
-  const fortByteData = processCheerioData(fortByteCheerioData);
+  const fortBytes = processCheerioData(fortByteCheerioData);
 
-  return fortByteData;
+  return {
+    lastUpdatedDate,
+    fortBytes,
+  };
 };
 
 module.exports = {
