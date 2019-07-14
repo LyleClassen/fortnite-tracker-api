@@ -1,64 +1,58 @@
 const rp = require('request-promise');
 const $ = require('cheerio');
-const url = 'https://fortniteintel.com/complete-list-of-all-fortbyte-challenges-currently-available/17530/';
+const url = 'https://www.eurogamer.net/articles/2019-05-24-fortnite-fortbyte-locations-6003';
 
 const getFortByteCheerioData  = (html) => {
-  const fortByteTrackerBlock = $('.td-post-content.td-pb-padding-side p > strong',html);
+  const fortByteTrackerBlock = $('.table-wrapper table tbody > tr',html);
 
-  const fortByteCheerioData = fortByteTrackerBlock.filter((i,line) => {
-    if(/^(Fortbyte )(\d){2,3}/.test($(line).text())){
-      return line;
-    } 
-  });
-  return fortByteCheerioData;
+  return fortByteTrackerBlock;
 }
 
-const getDescAndUrl = (fbCheerio) => {
-  let fbInfo;
-  if (fbCheerio.siblings().length) {
-    const helpLink = fbCheerio.siblings('a');
-    fbInfo = {
-      description: fbCheerio.text() + helpLink.text(),
-      url: helpLink.attr('href'),
+/**
+ * 
+ * @param {Cheerio} fortByteCheerioData 
+ */
+const processCheerioData = (fortByteCheerioData) => {
+ 
+  const fortByteData = fortByteCheerioData.toArray().map(cheerioData => {
+   const fbCheerio = $('td', cheerioData);
+   
+   if(fbCheerio.find('a').text()){
+    const achorCheerio = fbCheerio.find('a');
+    const fortByteNumber = achorCheerio.first().text();
+    const description = achorCheerio.last().text();
+    return {
+      id: parseInt(fortByteNumber.split(' ')[1]),
+      description: `${fortByteNumber} - ${description}`,
+      url: achorCheerio.first().attr('href'),
+      unlocked: true,
       canBeFound: true,
     };
-  }
-  else {
-    fbInfo = {
-      description: fbCheerio.text(),
-      isAchieved: true,
+   }
+
+   const fortByteNumber = fbCheerio.first().text();
+   const description = fbCheerio.last().text();
+   return {
+      id: parseInt(fortByteNumber.split(' ')[1]),
+      description: `${fortByteNumber} - ${description}`,
+      unlocked: !description.includes('Fortbyte TBC'),
+      isAchieved: !description.includes('Fortbyte TBC'),
     };
-  }
-  return fbInfo;
-}
-
-const processCheerioData = (fortByteCheerioData) => {
-  const fortByteData = [];
-  fortByteCheerioData.each((i, fbCheerioRaw) => {
-    const fbCheerio = $(fbCheerioRaw);
-
-    let fbInfo = getDescAndUrl(fbCheerio);
-
-    fbInfo.id = parseInt(fbCheerio.text().split(' ')[1]);
-    fbInfo.unlocked = !fbCheerio.text().endsWith('???');
-
-    fortByteData.push(fbInfo);
-  })
+  });
   return fortByteData;
 } 
 
 const findUpdatedDate = (html) => {
-  const fortByteTrackerBlock = $('.td-post-content.td-pb-padding-side p > strong',html);
-  const date = fortByteTrackerBlock.toArray().find((ele) => { 
-    return $(ele).text().endsWith('2019')
-  });
-  return $(date).text();
+  const articleUpdateDateBlock = $('.date span',html);
+
+  return $(articleUpdateDateBlock).text();
 };
 
 const scrapeFortByteData = async () => {
   const html = await rp(url);
   
   const fortByteCheerioData = getFortByteCheerioData(html)
+
   const lastUpdatedDate = findUpdatedDate(html);
 
   const fortBytes = processCheerioData(fortByteCheerioData);
