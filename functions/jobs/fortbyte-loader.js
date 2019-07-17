@@ -23,7 +23,7 @@ require('yargs')
       }
      const result = await rp(options);
 
-     console.log('Success:', result);
+     console.log('Success:', fbData);
     } catch (error) {
       console.error(error);
     }

@@ -17,7 +17,8 @@ const processCheerioData = (fortByteCheerioData) => {
   const fortByteData = fortByteCheerioData.toArray().map(cheerioData => {
    const fbCheerio = $('td', cheerioData);
    
-   if(fbCheerio.find('a').text()){
+   const linkText = fbCheerio.find('a').text();
+   if(linkText && !['Battle Pass','Challenges'].includes(linkText)){
     const achorCheerio = fbCheerio.find('a');
     const fortByteNumber = achorCheerio.first().text();
     const description = achorCheerio.last().text();
